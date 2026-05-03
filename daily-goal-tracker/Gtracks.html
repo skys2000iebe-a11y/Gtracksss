@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6d28d9">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <title>Gtracks - Daily Goal Tracker</title>
+    <meta name="description" content="Track your daily goals with style and stay productive.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor icons for elegant UI -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Chart.js for Statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Background elements for glassmorphism -->
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+
+        <!-- Auth Page -->
+        <div id="auth-page" class="page active">
+            <div class="glass-panel auth-container">
+                <div class="auth-header">
+                    <i class="ph ph-target-bold brand-icon"></i>
+                    <h1>Gtracks</h1>
+                    <p>Elevate your daily routine</p>
+                </div>
+
+                <div id="auth-error"
+                    style="color: var(--danger); text-align: center; font-size: 0.95rem; font-weight: 500; display: none; background: rgba(239, 68, 68, 0.1); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);">
+                </div>
+
+                <form id="signup-form">
+                    <div class="input-group">
+                        <i class="ph ph-user"></i>
+                        <input type="text" id="name" placeholder="Full Name" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="ph ph-envelope-simple"></i>
+                        <input type="email" id="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="ph ph-lock-key"></i>
+                        <input type="password" id="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn primary-btn">
+                        <span>Get Started</span>
+                        <i class="ph ph-arrow-right"></i>
+                    </button>
+                </form>
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="#" id="toggle-login">Sign in</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page">
+            <div class="dashboard-layout">
+                <aside class="sidebar glass-panel">
+                    <div class="user-profile">
+                        <div class="avatar" id="user-avatar">G</div>
+                        <div class="user-info">
+                            <h3 id="display-name">User Name</h3>
+                            <p>Free Plan</p>
+                        </div>
+                    </div>
+
+                    <nav class="side-nav">
+                        <a href="#" class="nav-item active" data-view="today"><i class="ph ph-check-circle"></i> Today's
+                            Goals</a>
+                        <a href="#" class="nav-item" data-view="calendar"><i class="ph ph-calendar-blank"></i>
+                            Calendar</a>
+                        <a href="#" class="nav-item" data-view="statistics"><i class="ph ph-chart-line-up"></i>
+                            Statistics</a>
+                        <a href="#" class="nav-item" data-view="settings"><i class="ph ph-gear"></i> Settings</a>
+                    </nav>
+
+                    <button class="btn secondary-btn sign-out-btn" id="sign-out">
+                        <i class="ph ph-sign-out"></i>
+                        <span>Sign Out</span>
+                    </button>
+                </aside>
+
+                <main class="main-content">
+                    <header class="dashboard-header glass-panel">
+                        <div class="header-titles">
+                            <h2 id="view-title">Today's Goals</h2>
+                            <p id="current-date">Monday, May 2</p>
+                        </div>
+                        <div class="progress-container" id="main-progress">
+                            <div class="progress-stats">
+                                <span>Progress</span>
+                                <span id="progress-percentage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div class="view-content-container">
+                        <!-- View: Today's Goals -->
+                        <div id="view-today" class="view-section active">
+                            <div class="goals-container glass-panel">
+                                <form id="add-goal-form" class="add-goal-box">
+                                    <button type="button" class="icon-btn"><i class="ph ph-plus"></i></button>
+                                    <input type="text" id="new-goal-input" placeholder="What's your focus for today?"
+                                        required>
+                                    <button type="submit" class="btn primary-btn sm-btn">Add</button>
+                                </form>
+
+                                <div class="goals-list" id="goals-list">
+                                    <!-- Goals will be injected here -->
+                                </div>
+
+                                <div class="empty-state" id="empty-state">
+                                    <i class="ph ph-leaf"></i>
+                                    <p>No goals for today yet. Set your intention!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- View: Calendar -->
+                        <div id="view-calendar" class="view-section">
+                            <div class="glass-panel p-2 flex-col gap-1" style="flex-grow: 1; overflow-y: auto;">
+                                <div class="calendar-controls">
+                                    <select id="cal-month" class="form-select"></select>
+                                    <select id="cal-year" class="form-select"></select>
+                                    <button id="cal-today-btn" class="btn secondary-btn sm-btn">Today</button>
+                                </div>
+                                <div class="calendar-weekdays">
+                                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                                </div>
+                                <div class="calendar-grid" id="calendar-grid"></div>
+
+                                <div id="reminder-section" class="reminder-section">
+                                    <h4 id="selected-date-text">Selected Date</h4>
+                                    <form id="add-reminder-form" class="add-goal-box" style="margin-top: 1rem;">
+                                        <select id="calendar-entry-type" class="form-select"
+                                            style="border: none; background: transparent; color: var(--text-primary); outline: none; padding-left: 0.5rem; padding-right: 0.5rem; cursor: pointer;">
+                                            <option value="reminder">Reminder</option>
+                                            <option value="goal">Goal</option>
+                                        </select>
+                                        <input type="text" id="reminder-input" placeholder="Add for this date..."
+                                            required>
+                                        <button type="submit" class="btn primary-btn sm-btn">Save</button>
+                                    </form>
+                                    <div class="reminders-list" id="reminders-list"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- View: Statistics -->
+                        <div id="view-statistics" class="view-section">
+                            <div class="glass-panel p-2 flex-col gap-1" style="flex-grow: 1;">
+                                <div class="stats-controls">
+                                    <button class="btn secondary-btn sm-btn active" data-range="day">Day</button>
+                                    <button class="btn secondary-btn sm-btn" data-range="week">Week</button>
+                                    <button class="btn secondary-btn sm-btn" data-range="month">Month</button>
+                                </div>
+                                <div class="chart-container"
+                                    style="position: relative; flex-grow: 1; width:100%; min-height: 300px;">
+                                    <canvas id="progressChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- View: Settings -->
+                        <div id="view-settings" class="view-section">
+                            <div class="glass-panel p-2 flex-col gap-2" style="flex-grow: 1; overflow-y: auto;">
+                                <h3>Appearance</h3>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <i class="ph ph-moon"></i>
+                                        <span>Dark Mode</span>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="theme-toggle" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <hr class="divider">
+
+                                <div class="help-section">
+                                    <h3><i class="ph ph-info"></i> Help & About</h3>
+                                    <p><strong>Gtracks</strong> is your personal daily goal tracker designed to help you
+                                        stay productive and organized.</p>
+                                    <br>
+                                    <p><strong>Features:</strong></p>
+                                    <ul>
+                                        <li><strong>Today's Goals:</strong> Keep track of your daily tasks. Check them
+                                            off as you complete them to see your progress bar fill up.</li>
+                                        <li><strong>Calendar:</strong> Plan ahead from 2026 to 2036. Select any date to
+                                            add or manage reminders for upcoming events.</li>
+                                        <li><strong>Statistics:</strong> Visualize your goal completion rate. View
+                                            progress for a specific Day, Week, or Month.</li>
+                                        <li><strong>Settings:</strong> Customize your experience with themes and access
+                                            help information.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracks AI Floating Agent -->
+    <div class="tracks-ai-fab" id="tracks-ai-fab">
+        <i class="ph-fill ph-sparkle tracks-ai-icon" style="font-size: 2rem;"></i>
+    </div>
+
+    <div class="tracks-ai-popup" id="tracks-ai-popup">
+        <div class="popup-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="ph-fill ph-sparkle tracks-ai-icon" style="font-size: 1.5rem;"></i>
+                <span style="font-weight: 600;">Tracks AI</span>
+            </div>
+            <button class="icon-btn" id="close-ai-popup"
+                style="background: none; border: none; cursor: pointer; color: var(--text-primary); font-size: 1.2rem;"><i
+                    class="ph ph-x"></i></button>
+        </div>
+        <div class="chat-container" id="ai-chat-box" style="padding: 1rem; min-height: 0;">
+            <div class="chat-message ai-message">
+                <div class="chat-avatar" style="background: transparent;">
+                    <i class="ph-fill ph-sparkle tracks-ai-icon" style="font-size: 1.8rem;"></i>
+                </div>
+                <div class="chat-bubble">Hi! I'm <strong>Tracks AI</strong>. Ask me anything about productivity, study
+                    plans, or organizing your day!</div>
+            </div>
+        </div>
+        <div class="chat-input-area"
+            style="padding: 1rem; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.2);">
+            <form id="ai-chat-form" style="display: flex; gap: 0.5rem;">
+                <input type="text" id="ai-input" placeholder="Message Tracks AI..." required class="form-input"
+                    style="flex-grow: 1; padding: 0.6rem;">
+                <button type="submit" class="btn primary-btn sm-btn" style="padding: 0 0.8rem;"><i
+                        class="ph ph-paper-plane-right"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW setup failed'));
+            });
+        }
+    </script>
+</body>
+
+</html>
